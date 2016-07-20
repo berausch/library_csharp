@@ -1,0 +1,26 @@
+<h1>All Books</h1>
+@if (@Model.Count == 0)
+{
+  <p>No books yet</p>
+}
+<ul>
+  @foreach (var book in Model)
+  {
+    <li>
+      <form action="/delete_books/@book.GetId()" method="post">
+        <a href = "/book/@book.GetId()">@book.GetTitle()</a>
+        | <a href = "/edit_books/@book.GetId()"><button type="button">Edit title</button></a>
+        | <input type="hidden" name="_method" value="DELETE">
+        <button type="submit">Delete</button>
+      </form>
+    </li>
+  }
+</ul>
+<br>
+<form action = "/librarian/start" method = "post">
+  <label for = "book-name">Book name</label>
+  <input id = "book-name" name = "book-name" type = "text">
+  <label for = "author-name">Author name</label>
+  <input id = "author-name" name = "author-name" type = "text">
+  <button type = "submit">Add book</button>
+</form>

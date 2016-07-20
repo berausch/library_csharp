@@ -1,0 +1,18 @@
+<h1>All Books</h1>
+
+<h3>@Model["book"].GetTitle()</h3>
+@foreach (var author in @Model["authors"])
+  {
+    <form action="/delete_author/@author.GetId()" method="post">
+      <h4>@author.GetName()
+      | <a href = "/edit_author/@author.GetId()"><button type="button">Edit author</button></a>
+      | <input type="hidden" name="_method" value="DELETE">
+      <button type="submit">Delete</button></h4>
+    </form>
+  }
+
+  <form action = "/book/@Model["book"].GetId()" method = "post">
+    <label for = "author-name">Author name</label>
+    <input id = "author-name" name = "author-name" type = "text">
+    <button type = "submit">Add Author</button>
+  </form>

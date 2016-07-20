@@ -12,6 +12,60 @@ namespace Library
       Get ["/"]= _ =>{
         return View ["index.cshtml"];
       };
+      Get ["/librarian/start"]= _ =>{
+        return View ["librarian_start.cshtml", Book.GetAll()];
+      };
+
+      Post ["/librarian/start"]= _ =>{
+        Book newBook = new Book(Request.Form["book-name"]);
+        newBook.Save();
+        Author newAuthor = new Author(Request.Form["author-name"]);
+        newAuthor.Save();
+        newBook.AddAuthor(newAuthor);
+        return View ["librarian_start.cshtml", Book.GetAll()];
+      };
+      Post ["/book/{id}"] = parameters =>{
+        Book SelectedBook = Book.Find(parameters.id);
+        Author newAuthor = new Author(Request.Form["author-name"]);
+        newAuthor.Save();
+        newAuthor.AddBook(SelectedBook);
+        return View ["librarian_start.cshtml", Book.GetAll()];
+      };
+      Get["/book/{id}"] = parameters => {
+        Dictionary<string, object> model = new Dictionary<string, object>();
+        Book SelectedBook = Book.Find(parameters.id);
+        List<Author> BookAuthors = SelectedBook.GetAuthors();
+        model.Add("book", SelectedBook);
+        model.Add("authors", BookAuthors);
+        return View ["book.cshtml", model];
+      };
+      Delete["/delete_books/{id}"] = parameters => {
+        Book SelectedBook = Book.Find(parameters.id);
+        SelectedBook.Delete();
+        return View["librarian_start.cshtml", Book.GetAll()];
+      };
+
+      Get["/edit_books/{id}"] = parameters => {
+        Book SelectedBook = Book.Find(parameters.id);
+        return View["book_update.cshtml", SelectedBook];
+      };
+      Patch["/edit_books/{id}"] = parameters => {
+        Book SelectedBook = Book.Find(parameters.id);
+        SelectedBook.UpdateTitle(Request.Form["book-name"]);
+        return View["librarian_start.cshtml", Book.GetAll()];
+      };
+      Get["/edit_author/{id}"] = parameters => {
+        Author SelectedAuthor = Author.Find(parameters.id);
+        return View["author_update.cshtml", SelectedAuthor];
+      };
+      Patch["/edit_author/{id}"] = parameters => {
+        Author SelectedAuthor = Author.Find(parameters.id);
+        SelectedAuthor.Update(Request.Form["author-name"]);
+        return View["librarian_start.cshtml", Book.GetAll()];
+      };
+      Get ["/patron/start"]= _ =>{
+        return View ["patron_start.cshtml"];
+      };
       Get ["/copies"]= _ => {
         List<Copy> AllCopies = Copy.GetAll();
         return View["copies.cshtml", AllCopies];

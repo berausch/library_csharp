@@ -9,10 +9,10 @@ namespace Library
     private int _id;
     private string _name;
 
-    public Author(string Name, int Id = 0)
+    public Author(string name, int Id = 0)
     {
       _id= Id;
-      _name = Name;
+      _name = name;
     }
 
     public override bool Equals(System.Object otherAuthor)
@@ -218,6 +218,41 @@ namespace Library
       return books;
     }
 
+    public void Update(string newName)
+    {
+      SqlConnection conn = DB.Connection();
+      SqlDataReader rdr;
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("UPDATE authors SET name = @NewName OUTPUT INSERTED.name WHERE id = @BookId;", conn);
+
+      SqlParameter newNameParameter = new SqlParameter();
+      newNameParameter.ParameterName = "@NewName";
+      newNameParameter.Value = newName;
+      cmd.Parameters.Add(newNameParameter);
+
+
+      SqlParameter authorIdParameter = new SqlParameter();
+      authorIdParameter.ParameterName = "@BookId";
+      authorIdParameter.Value = this.GetId();
+      cmd.Parameters.Add(authorIdParameter);
+      rdr = cmd.ExecuteReader();
+
+      while(rdr.Read())
+      {
+        this._name = rdr.GetString(0);
+      }
+
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
     public void Delete()
     {
       SqlConnection conn = DB.Connection();

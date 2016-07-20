@@ -1,0 +1,11 @@
+<h1>author edit</h1>
+<hr />
+<h2>Edit book: @Model.GetName()</h2>
+<form action="/edit_author/@Model.GetId()" method="post">
+  <input type="hidden" name="_method" value="PATCH">
+  <input name="author-id" type="hidden" value="@Model.GetId()">
+  <label for="author-name">enter the new author name</label>
+  <input id="author-name" name="author-name" type="text">
+  <button type="submit">Submit</button>
+</form>
+<h4><a href="/">Return home</a></h4>
