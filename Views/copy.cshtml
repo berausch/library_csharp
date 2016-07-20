@@ -1,0 +1,27 @@
+<h1>To Do List</h1>
+<h2>Copy: @Model["copy"].GetDescription()</h2>
+<hr />
+@if (@Model["copyPatrons"].Count != 0)
+{
+  <h4>This copy has these patrons:</h4>
+  <ul>
+    @foreach (var patron in @Model["copyPatrons"])
+    {
+      <li>@patron.GetName()</li>
+
+    }
+  </ul>
+}
+<h4>Add a patron to this copy:</h4>
+<form action='/copy/add_patron' method='post'>
+  <input id='copy-id' name='copy-id' type='hidden' value='@Model["copy"].GetId()'>
+  <label for='patron-id'>Select a patron</label>
+  <select id='patron-id' name='patron-id' type='text'>
+    @foreach (var patron in @Model["allPatrons"])
+    {
+      <option value='@patron.GetId()'>@patron.GetName()</option>
+    }
+  </select>
+  <button type='submit'>Add</button>
+</form>
+<p><a href="/">Return to Main Page</a></p>

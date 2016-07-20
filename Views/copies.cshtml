@@ -1,0 +1,36 @@
+@if (@Model.Count == 0)
+{
+  <p>No copies have been added yet!</p>
+}
+else
+{
+  <h1>Here is your list of copies:</h1>
+  <ul>
+    @foreach (var copy in Model)
+    {
+      <li><a href="/copies/@copy.GetId()">@copy.GetDescription()</a>
+        @copy.GetCopyDueDate()
+        @if(copy.GetCopyComplete() == true)
+        {
+          <p>
+            DONE!
+          </p>
+        }
+        else{
+          <p>
+          NOT DONE!
+        </p>}
+        <form action="/copyComplete" method="post">
+          <input type="hidden" name="GetId" value = "@copy.GetId()">
+          <label for="copy-complete">Done</label>
+          <input type="checkbox" name="copy-complete" value = "true" >
+        <button type='submit'>Add</button>
+      </form></li>
+    }
+  </ul>
+  <form action="/copies/delete" method="post">
+    <button type="submit">Clear all copies</button>
+  </form>
+}
+<p><a href="/copies/new">Add a new copy</a></p>
+<p><a href="/">Return home</a></p>
