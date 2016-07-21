@@ -1,26 +1,46 @@
-<h1>To Do List</h1>
+
+<h1>patron's books</h1>
 <h2>Patron: @Model["patron"].GetName()</h2>
 <hr />
-@if (@Model["patronCopys"].Count != 0)
+@if (@Model["patronCopies"].Count != 0)
 {
-  <h4>Here are all the copies in this patron:</h4>
+  <h4>Here are all the books this patron borrowed:</h4>
   <ul>
-    @foreach (var copy in @Model["patronCopys"])
+    @foreach (var copy in @Model["patronCopies"])
     {
-      <li>@copy.GetDescription()</li>
+      <li>@copy.GetBook().GetTitle()
+        @if(@copy.GetJustDate() == "1/1/1753")
+        {
+         <span> - Returned</span>
+        }
+        else
+        {<span> - @copy.GetJustDate()</span>
+          <form action="/patron/return_book/@copy.GetId()" method="post">
+            <input type="hidden" name="_method">
+          <button type="submit"><span>Return</span></button>
+          </form>
+
+
+
+        }
+    </li>
     }
   </ul>
 }
-<h4>Add a copy to this patron:</h4>
+<h4>choose a book you want to borrow:</h4>
 <form action='/patron/add_copy' method='post'>
   <input id='patron-id' name='patron-id' type='hidden' value='@Model["patron"].GetId()'>
   <label for='copy-id'>Select a copy</label>
   <select id='copy-id' name='copy-id' type='text'>
-    @foreach (var copy in @Model["allCopys"])
+    @foreach (var copy in @Model["allCopies"])
     {
-      <option value='@copy.GetId()'>@copy.GetDescription()</option>
+      <option value='@copy.GetId()'>@copy.GetBook().GetTitle()</option>
     }
   </select>
-  <button type='submit'>Add</button>
+  <br>
+  <br>
+  <label for='due-date'>Todays Date</label>
+  <input id='due-date' name='due-date' type='date'>
+  <button type='submit'>Check out</button>
 </form>
 <p><a href="/">Return to Main Page</a></p>

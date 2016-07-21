@@ -22,5 +22,18 @@
   <input id = "book-name" name = "book-name" type = "text">
   <label for = "author-name">Author name</label>
   <input id = "author-name" name = "author-name" type = "text">
+  <label for = "copies-number">number of copies of this book</label>
+  <input id = "copies-number" name = "copies-number" type = "text">
   <button type = "submit">Add book</button>
+</form>
+
+<form action = "/librarian/search/title" method = "post">
+  <label for = "search-title">search by book name</label>
+  <input id = "search-title" name = "search-title" type = "text">
+  <button type = "submit">search by book name</button>
+</form>
+<form action = "/librarian/search/author" method = "post">
+  <label for = "search-author">search by author name</label>
+  <input id = "search-author" name = "search-author" type = "text">
+  <button type = "submit">search</button>
 </form>

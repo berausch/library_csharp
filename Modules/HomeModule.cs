@@ -21,9 +21,24 @@ namespace Library
         newBook.Save();
         Author newAuthor = new Author(Request.Form["author-name"]);
         newAuthor.Save();
+        for(int i=0; i<Request.Form["copies-number"]; i++){
+          Copy newCopy = new Copy(newBook.GetId(), 0, (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue);
+          newCopy.Save();
+        }
         newBook.AddAuthor(newAuthor);
         return View ["librarian_start.cshtml", Book.GetAll()];
       };
+
+      Post ["/librarian/search/title"] = _ =>{
+        List<Book> selectedBook = Book.FindByTitle(Request.Form["search-title"]);
+        return View ["search_result.cshtml", selectedBook];
+      };
+
+      Post ["/librarian/search/author"] = _ =>{
+        List<Book> selectedBook = Book.FindByAuthor(Request.Form["search-author"]);
+        return View ["search_result.cshtml", selectedBook];
+      };
+
       Post ["/book/{id}"] = parameters =>{
         Book SelectedBook = Book.Find(parameters.id);
         Author newAuthor = new Author(Request.Form["author-name"]);
@@ -70,6 +85,10 @@ namespace Library
         List<Copy> AllCopies = Copy.GetAll();
         return View["copies.cshtml", AllCopies];
       };
+      Post ["/copies/number"]= _ => {
+        List<Copy> AllCopies = Copy.GetCopies(Request.Form["find-number-of-books"]);
+        return View["copies_of_book.cshtml", AllCopies];
+      };
       Get ["/patrons"]= _ =>{
         List<Patron> allPatrons = Patron.GetAll();
         return View ["patrons.cshtml", allPatrons];
@@ -78,7 +97,7 @@ namespace Library
         return View ["copy_form.cshtml"];
       };
       Post ["copies/new"]= _ =>{
-        Copy newCopy = new Copy(Request.Form["copy-description"],Request.Form["day"],Request.Form["copy-complete"]);
+        Copy newCopy = new Copy(Request.Form["book-id"], Request.Form["number"], Request.Form["day"], Request.Form["pass-due"]);
         newCopy.Save();
         List<Copy> AllCopies = Copy.GetAll();
         return View ["copies.cshtml", AllCopies];
@@ -113,25 +132,24 @@ namespace Library
         model.Add("allCopies", AllCopies);
         return View["patron.cshtml", model];
       };
-      Post["copy/add_patron"] = _ => {
+      Post["/copy/add_patron"] = _ => {
         Patron patron = Patron.Find(Request.Form["patron-id"]);
         Copy copy = Copy.Find(Request.Form["copy-id"]);
         copy.AddPatron(patron);
         return View["success.cshtml"];
       };
-      Post["patron/add_copy"] = _ => {
+      Post["/patron/add_copy"] = _ => {
         Patron patron = Patron.Find(Request.Form["patron-id"]);
         Copy copy = Copy.Find(Request.Form["copy-id"]);
         patron.AddCopy(copy);
+        DateTime updateDate = Request.Form["due-date"];
+        updateDate = updateDate.AddDays(14);
+        copy.Update(true, updateDate);
         return View["success.cshtml"];
       };
-      Post ["/copyComplete"]= _ =>{
-        // copyName = (Request.Form["copy-id"]);
-        // copyBool =(Request.Form["copy-complete"]);
-        // Copy copy = new Copy (copyName, copyBool);
-        // copy.Save();
-        Copy copy = Copy.Find(Request.Form["GetId"]);
-        copy.Update(Request.Form["copy-complete"]);
+      Post["/patron/return_book/{id}"] = parameters => {
+        Copy copy = Copy.Find(parameters.id);
+        copy.Update(false, (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue);
         return View["success.cshtml"];
       };
     }

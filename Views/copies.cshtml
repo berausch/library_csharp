@@ -8,17 +8,17 @@ else
   <ul>
     @foreach (var copy in Model)
     {
-      <li><a href="/copies/@copy.GetId()">@copy.GetDescription()</a>
+      <li><a href="/copies/@copy.GetId()">@copy.GetNumber()</a>
         @copy.GetCopyDueDate()
-        @if(copy.GetCopyComplete() == true)
+        @if(copy.GetOverdue() == true)
         {
           <p>
-            DONE!
+            NOT OVERDUE!
           </p>
         }
         else{
           <p>
-          NOT DONE!
+          OVERDUE!
         </p>}
         <form action="/copyComplete" method="post">
           <input type="hidden" name="GetId" value = "@copy.GetId()">

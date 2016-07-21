@@ -139,6 +139,78 @@ namespace Library
       return foundBook;
     }
 
+    public static List<Book> FindByTitle(string newTitle)
+    {
+      SqlConnection conn = DB.Connection();
+      SqlDataReader rdr = null;
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("SELECT * FROM books WHERE title = @Booktitle;", conn);
+      SqlParameter bookIdParameter = new SqlParameter();
+      bookIdParameter.ParameterName = "Booktitle";
+      bookIdParameter.Value = newTitle;
+      cmd.Parameters.Add(bookIdParameter);
+      rdr = cmd.ExecuteReader();
+
+      int foundBookId = 0;
+      string foundBookDescription = null;
+      List<Book> foundBooks = new List<Book>{};
+
+      while(rdr.Read())
+      {
+        foundBookId = rdr.GetInt32(0);
+        foundBookDescription = rdr.GetString(1);
+        Book foundBook = new Book(foundBookDescription, foundBookId);
+        foundBooks.Add(foundBook);
+      }
+
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+      if (conn != null)
+      {
+        conn.Close();
+      }
+      return foundBooks;
+    }
+
+    public static List<Book> FindByAuthor(string newAuthor)
+    {
+      SqlConnection conn = DB.Connection();
+      SqlDataReader rdr = null;
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("SELECT books.* FROM authors JOIN books_authors ON (authors.id = books_authors.author_id) JOIN books ON (books_authors.book_id = books.id) WHERE authors.name = @Bookauthor", conn);
+      SqlParameter bookIdParameter = new SqlParameter();
+      bookIdParameter.ParameterName = "Bookauthor";
+      bookIdParameter.Value = newAuthor;
+      cmd.Parameters.Add(bookIdParameter);
+      rdr = cmd.ExecuteReader();
+
+      int foundBookId = 0;
+      string foundBookDescription = null;
+      List<Book> foundBooks = new List<Book>{};
+
+      while(rdr.Read())
+      {
+        foundBookId = rdr.GetInt32(0);
+        foundBookDescription = rdr.GetString(1);
+        Book foundBook = new Book(foundBookDescription, foundBookId);
+        foundBooks.Add(foundBook);
+      }
+
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+      if (conn != null)
+      {
+        conn.Close();
+      }
+      return foundBooks;
+    }
+
     public void UpdateTitle(string newName)
     {
       SqlConnection conn = DB.Connection();

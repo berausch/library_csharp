@@ -1,11 +1,13 @@
 <h1>Add a new copy</h1>
 <form action="/copies/new" method="post">
-  <label for="copy-description">Copy description:</label>
-  <input id="copy-description" name="copy-description" type="text">
+  <label for="book-id">Book Id:</label>
+  <input id="book-id" name="book-id" type="text">
+  <label for="number">number:</label>
+  <input id="number" name="number" type="text">
   <label for="day">Day</label>
   <input type="date" name="day" id="day">
-  <label for="copy-complete">Done</label>
-  <input type="checkbox" name="copy-complete" value = "true" >
+  <label for="pass-due">Due</label>
+  <input type="checkbox" name="pass-due" value = "true" >
   <button type="submit">Add new copy</button>
 </form>
 <p><a href="/">Back home</a></p>

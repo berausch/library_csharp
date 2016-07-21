@@ -9,15 +9,15 @@ namespace Library
     private int _id;
     private int _bookId;
     private int _number;
-    private bool _overdue;
+    private bool _checkedOut;
     private DateTime _dueDate;
 
-    public Copy(int bookId, int number, DateTime dueDate, bool overdue = false,  int Id = 0)
+    public Copy(int bookId, int number, DateTime dueDate, bool checkedOut = false,  int Id = 0)
     {
       _id = Id;
       _bookId = bookId;
       _number = number;
-      _overdue = overdue;
+      _checkedOut = checkedOut;
       _dueDate = dueDate;
     }
 
@@ -59,18 +59,56 @@ namespace Library
     {
       return _dueDate;
     }
+    public string GetJustDate()
+    {
+      DateTime dateOnly = _dueDate.Date;
+      string dateOnlyString = dateOnly.ToString("d");
+      return dateOnlyString;
+    }
     public void SetCopyDueDate(DateTime newDueDate)
     {
       _dueDate = newDueDate;
     }
-    public bool GetOverdue()
+    public bool GetCheckedOut()
     {
-      return _overdue;
+      return _checkedOut;
     }
-    public void SetOverdue(bool newOverdue)
+    public void SetCheckedOut(bool newCheckedOut)
     {
-      _overdue = newOverdue;
+      _checkedOut = newCheckedOut;
     }
+
+    public Book GetBook()
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("SELECT * FROM books WHERE id = @BookId;", conn);
+      SqlParameter bookIdParameter = new SqlParameter();
+      bookIdParameter.ParameterName = "@BookId";
+      bookIdParameter.Value = this.GetId();
+      cmd.Parameters.Add(bookIdParameter);
+      SqlDataReader rdr = cmd.ExecuteReader();
+
+      int bookId =0;
+      string bookDescription = null;
+      while(rdr.Read())
+      {
+        bookId = rdr.GetInt32(0);
+        bookDescription = rdr.GetString(1);
+      }
+      Book newBook = new Book(bookDescription, bookId);
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+      if (conn != null)
+      {
+        conn.Close();
+      }
+      return newBook;
+    }
+
     public static List<Copy> GetAll()
     {
       List<Copy> AllCopys = new List<Copy>{};
@@ -87,9 +125,9 @@ namespace Library
         int copyId = rdr.GetInt32(0);
         int copyBookId = rdr.GetInt32(1);
         int copyNumber = rdr.GetInt32(2);
-        bool overdue = rdr.GetBoolean(3);
+        bool checkedOut = rdr.GetBoolean(3);
         DateTime copyDueDate = rdr.GetDateTime(4);
-        Copy newCopy = new Copy(copyBookId, copyNumber, copyDueDate, overdue, copyId);
+        Copy newCopy = new Copy(copyBookId, copyNumber, copyDueDate, checkedOut, copyId);
         AllCopys.Add(newCopy);
       }
       if (rdr != null)
@@ -108,7 +146,7 @@ namespace Library
       SqlDataReader rdr;
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("INSERT INTO copies (book_id, number, overdue, due) OUTPUT INSERTED.id VALUES (@CopyBookId, @CopyNumber, @overdue, @CopyDueDate)", conn);
+      SqlCommand cmd = new SqlCommand("INSERT INTO copies (book_id, number, checked_out, due) OUTPUT INSERTED.id VALUES (@CopyBookId, @CopyNumber, @checkedOut, @CopyDueDate)", conn);
 
       SqlParameter bookIdParam = new SqlParameter();
       bookIdParam.ParameterName = "@CopyBookId";
@@ -122,11 +160,11 @@ namespace Library
 
       cmd.Parameters.Add(numberParam);
 
-      SqlParameter overdueParam = new SqlParameter();
-      overdueParam.ParameterName = "@overdue";
-      overdueParam.Value = this.GetOverdue();
+      SqlParameter checkedOutParam = new SqlParameter();
+      checkedOutParam.ParameterName = "@checkedOut";
+      checkedOutParam.Value = this.GetCheckedOut();
 
-      cmd.Parameters.Add(overdueParam);
+      cmd.Parameters.Add(checkedOutParam);
 
       SqlParameter CopyDueDateParam = new SqlParameter();
       CopyDueDateParam.ParameterName = "@CopyDueDate";
@@ -158,6 +196,41 @@ namespace Library
       cmd.ExecuteNonQuery();
     }
 
+    public static List<Copy> GetCopies(string bookTitle)
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("SELECT copies.* FROM books JOIN copies ON (copies.book_id = books.id) WHERE books.title = @BookTitle", conn);
+      SqlParameter bookIdParameter = new SqlParameter();
+      bookIdParameter.ParameterName = "@BookTitle";
+      bookIdParameter.Value = bookTitle;
+      cmd.Parameters.Add(bookIdParameter);
+      SqlDataReader rdr = cmd.ExecuteReader();
+
+      List<Copy> copies = new List<Copy> {};
+      while(rdr.Read())
+      {
+        int copyId = rdr.GetInt32(0);
+        int bookd = rdr.GetInt32(1);
+        int copynumber = rdr.GetInt32(2);
+        bool overDue = rdr.GetBoolean(3);
+        DateTime due = rdr.GetDateTime(4);
+        Copy newCopy = new Copy(bookd, copynumber, due, overDue, copyId);
+        copies.Add(newCopy);
+      }
+      Console.Write(copies.Count);
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+      if (conn != null)
+      {
+        conn.Close();
+      }
+      return copies;
+    }
+
     public static Copy Find(int id)
     {
       SqlConnection conn = DB.Connection();
@@ -174,7 +247,7 @@ namespace Library
       int foundCopyId = 0;
       int foundCopyBookId = 0;
       int foundNumber = 0;
-      bool foundoverdue = false;
+      bool foundcheckedOut = false;
       DateTime foundCopyDueDate = DateTime.MinValue;
 
       while(rdr.Read())
@@ -182,10 +255,10 @@ namespace Library
         foundCopyId = rdr.GetInt32(0);
         foundCopyBookId = rdr.GetInt32(1);
         foundNumber = rdr.GetInt32(2);
-        foundoverdue = rdr.GetBoolean(3);
+        foundcheckedOut = rdr.GetBoolean(3);
         foundCopyDueDate = rdr.GetDateTime(4);
       }
-      Copy foundCopy = new Copy(foundCopyBookId, foundNumber, foundCopyDueDate, foundoverdue, foundCopyId);
+      Copy foundCopy = new Copy(foundCopyBookId, foundNumber, foundCopyDueDate, foundcheckedOut, foundCopyId);
 
       if (rdr != null)
       {
@@ -301,19 +374,42 @@ namespace Library
       }
     }
 
-    public void Update(bool newComplete)
+    public void Return()
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("DELETE FROM checkouts WHERE copy_id = @CopyId;", conn);
+      SqlParameter copyIdParameter = new SqlParameter();
+      copyIdParameter.ParameterName = "@CopyId";
+      copyIdParameter.Value = this.GetId();
+
+      cmd.Parameters.Add(copyIdParameter);
+      cmd.ExecuteNonQuery();
+
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
+
+    public void Update(bool newCheckedOut, DateTime newDate)
     {
       SqlConnection conn = DB.Connection();
       SqlDataReader rdr;
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("UPDATE copies SET overdue = @NewName OUTPUT INSERTED.overdue WHERE id = @PatronId;", conn);
+      SqlCommand cmd = new SqlCommand("UPDATE copies SET checked_out = @NewCheck, due = @NewDate OUTPUT INSERTED.checked_out, INSERTED.due WHERE id = @PatronId;", conn);
 
       SqlParameter newNameParameter = new SqlParameter();
-      newNameParameter.ParameterName = "@NewName";
-      newNameParameter.Value = newComplete;
+      newNameParameter.ParameterName = "@NewCheck";
+      newNameParameter.Value = newCheckedOut;
       cmd.Parameters.Add(newNameParameter);
 
+      SqlParameter newDateParameter = new SqlParameter();
+      newDateParameter.ParameterName = "@NewDate";
+      newDateParameter.Value = newDate;
+      cmd.Parameters.Add(newDateParameter);
 
       SqlParameter patronIdParameter = new SqlParameter();
       patronIdParameter.ParameterName = "@PatronId";
@@ -323,7 +419,8 @@ namespace Library
 
       while(rdr.Read())
       {
-        this._overdue = rdr.GetBoolean(0);
+        this._checkedOut = rdr.GetBoolean(0);
+        this._dueDate = rdr.GetDateTime(1);
       }
 
       if (rdr != null)
